@@ -1,0 +1,24 @@
+---
+ working_dir: '.'
+ fname_dataset: 'dataset/chembl28-cleaned.smi'
+ fname_fps: 'dataset/fps.pkl'
+ fname_tokenizer: '.tokenizer.pkl'
+ fname_rnn_parameters: 'parameters/rnn.param'
+ fname_vae_encoder_parameters: 'parameters/encoder.param'
+ fname_vae_decoder_parameters: 'parameters/decoder.param'
+ sampled_dir: 'sampled'
+ maxLength: 128
+ batch_size: 512
+ num_epoch: 60
+ lr: 5.0e-3
+
+ rnn_param:
+  embedding_dim: 256
+  hidden_dim: 384
+  num_hidden: 3
+
+ vae_param:
+  fc_dims: [2048, 512, 128]
+  latent_dim: 64
+  hidden_dim: 384
+  num_hidden: 3
