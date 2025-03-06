@@ -1,4 +1,5 @@
 import os
+import logging
 import pickle, yaml
 import rdkit.Chem as Chem
 import rdkit.Chem.AllChem as AllChem
@@ -8,6 +9,9 @@ from tokens import Tokenizer, getTokenizer
 # suppress rdkit error
 from rdkit import rdBase
 rdBase.DisableLog('rdApp.error')
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger()
 
 def __load_config(fyaml='config.yaml'):
     with open(fyaml, 'r') as f:
@@ -36,7 +40,7 @@ def mkdir_multi(path_str):
 
 def get_tokenizer():
     if os.path.exists(config['fname_tokenizer']):
-        print('read tokenizer from pickle file "%s"' % (config['fname_tokenizer']))
+        logger.info(f'Read tokenizer from pickle file "{config['fname_tokenizer']}"')
         with open(config['fname_tokenizer'], 'rb') as f:
             tokenizer = pickle.load(f)
     else:

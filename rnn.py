@@ -1,6 +1,5 @@
 import torch
 import utils
-import time
 from os import path
 
 
@@ -23,7 +22,7 @@ class RNN(torch.nn.Module):
         if path.isfile(self.state_fname):
             self.load_state_dict(torch.load(self.state_fname))
         else:
-            print("state file is not found")
+            utils.logger.info("State file is not found")
 
     def saveState(self):
         dir_name = path.dirname(self.state_fname)
@@ -87,8 +86,7 @@ class RNN(torch.nn.Module):
                     numValid = sum([utils.isValidSmiles(sm)
                                    for sm in smilesStrs])
                     numValid_list.append(numValid)
-                    print("[%s] Epoch %3d & Batch %4d: Loss= %.5e Valid= %3d/%3d" % (
-                        time.ctime(), epoch, nbatch, sum(lossList) / len(lossList), numValid, numSample))
+                    utils.logger.info(f'Epoch {epoch:3d} & Batch {nbatch:4d}: Loss= {sum(lossList) / len(lossList):.5e} Valid= {numValid:3d}/{numSample:3d}')
                     lossList.clear()
                     if minloss is None:
                         minloss = loss.item()
@@ -96,5 +94,4 @@ class RNN(torch.nn.Module):
                         self.saveState()
                         minloss = loss.item()
             scheduler.step()
-            print("[%s] Epoch %3d: Loss= %.5e Valid= %3d/%3d" % (time.ctime(), epoch,
-                  accumulatedLoss / nbatch, sum(numValid_list) / len(numValid_list), numSample))
+            utils.logger.info(f'Epoch {epoch:3d}: Loss= {accumulatedLoss / nbatch:.5e} Valid= {round(sum(numValid_list) / len(numValid_list)):3d}/{numSample:3d}')

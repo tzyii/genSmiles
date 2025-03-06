@@ -89,33 +89,38 @@ class RL(object):
                   (i, loss.item(), scores.mean(), scores.median(), scores.max(), scores.min(), num_wrong, self.batch_size))
         return agent
 
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-m', '--method', type=str)
+    parser.add_argument('-p', '--parameter', type=str)
+    parser.add_argument('--gpu', action='store_true', default=False)
+    args = parser.parse_args()
+    method = args.method
+    parameter = args.parameter
+    device_type = 'cpu'
+    if args.gpu:
+        if torch.cuda.is_available():
+            device_type = 'cuda'
+        elif torch.backends.mps.is_available():
+            device_type = 'mps'
+    device = torch.device(device_type)
+    utils.logger.info(f'Device={device_type}')
+    fname_param = os.path.join(os.path.dirname(
+        utils.config['fname_rnn_parameters']), parameter)
+    tokenizer = utils.get_tokenizer()
+    similEvaluator = utils.SimilEvaluator(
+        utils.config['fname_dataset'], utils.config['fname_fps'], utils.config['maxLength'])
+    rl = RL(num_epoch=300, batch_size=512, tokenizer=tokenizer,
+            model_init_param=utils.config['rnn_param'], state_fname=utils.config['fname_rnn_parameters'], device=device)
+    agent = None
+    if method == 'reinforce':
+        agent = rl.reinforce(similEvaluator.getSimil, fname_param)
+    elif method == 'reinvent':
+        agent = rl.reinvent(similEvaluator.getSimil, fname_param)
 
-parser = argparse.ArgumentParser()
-parser.add_argument('-m', '--method', type=str)
-parser.add_argument('-p', '--parameter', type=str)
-parser.add_argument('--gpu', action='store_true', default=False)
-args = parser.parse_args()
-method = args.method
-parameter = args.parameter
-useGPU = args.gpu and torch.cuda.is_available()
-#useGPU = True
-#method = 'reinvent'
-#parameter = 'reinvent.param'
-device = torch.device('cuda' if useGPU else 'cpu')
-print(f'useGPU = {useGPU}')
-fname_param = os.path.join(os.path.dirname(
-    utils.config['fname_rnn_parameters']), parameter)
-tokenizer = utils.get_tokenizer()
-similEvaluator = utils.SimilEvaluator(
-    utils.config['fname_dataset'], utils.config['fname_fps'], utils.config['maxLength'])
-rl = RL(num_epoch=300, batch_size=512, tokenizer=tokenizer,
-        model_init_param=utils.config['rnn_param'], state_fname=utils.config['fname_rnn_parameters'], device=device)
-agent = None
-if method == 'reinforce':
-    agent = rl.reinforce(similEvaluator.getSimil, fname_param)
-elif method == 'reinvent':
-    agent = rl.reinvent(similEvaluator.getSimil, fname_param)
+    if agent is not None:
+        utils.mkdir_multi(os.path.dirname(fname_param))
+        agent.saveState()
 
-if agent is not None:
-    utils.mkdir_multi(os.path.dirname(fname_param))
-    agent.saveState()
+if __name__ == '__main__':
+    main()

@@ -1,7 +1,6 @@
 import torch
 import os
 import utils
-import time
 
 
 class Encoder(torch.nn.Module):
@@ -194,8 +193,7 @@ class VAE(object):
                     numValid = self.latent_space_quality(numSample, tokenizer)
                     quality_list.append(quality)
                     numValid_list.append(numValid)
-                    print("[%s] Epoch %4d & Batch %4d: Reconstruction_Loss= %.5e KLD_Loss= %.5e Quality= %3d/%3d Valid= %3d/%3d" % (time.ctime(), epoch, nBatch, sum(
-                        reconstruction_loss_list) / len(reconstruction_loss_list), sum(kld_loss_list) / len(kld_loss_list), quality, self.decoder.maxLength, numValid, numSample))
+                    utils.logger.info(f"Epoch {epoch:4d} & Batch {nBatch:4d}: Reconstruction_Loss= {sum(reconstruction_loss_list) / len(reconstruction_loss_list):.5e} KLD_Loss= {sum(kld_loss_list) / len(kld_loss_list):.5e} Quality= {quality:.0f}/{self.decoder.maxLength:3d} Valid= {numValid:3d}/{numSample:3d}")
                     reconstruction_loss_list.clear()
                     kld_loss_list.clear()
                     if minloss is None:
@@ -206,5 +204,4 @@ class VAE(object):
                         minloss = loss.item()
             encoderScheduler.step()
             decoderScheduler.step()
-            print("[%s] Epoch %4d: Reconstruction_Loss= %.5e KLD_Loss= %.5e Quality= %3d/%3d Valid= %3d/%3d" % (time.ctime(), epoch, accumulated_reconstruction_loss /
-                  nBatch, accumulated_kld_loss / nBatch, sum(quality_list) / len(quality_list), self.decoder.maxLength, sum(numValid_list) / len(numValid_list), numSample))
+            utils.logger.info(f"Epoch {epoch:4d}: Reconstruction_Loss= {accumulated_reconstruction_loss / nBatch:.5e} KLD_Loss= {accumulated_kld_loss / nBatch:.5e} Quality= {sum(quality_list) / len(quality_list):.0f}/{self.decoder.maxLength:3d} Valid= {sum(numValid_list) / len(numValid_list):.0f}/{numSample:3d}")
